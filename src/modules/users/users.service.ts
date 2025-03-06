@@ -177,13 +177,16 @@ export class UsersService {
   }
 
   async handleRegister(registerDto: CreateAuthDto) {
-    const { username, email, password } = registerDto;
+    const { fullName, email, password, confirmPassword, phoneNumber } =
+      registerDto;
 
-    // Check username has exist?
-    const isUsernameExist = await this.isUserExist(username);
-    if (isUsernameExist) {
+    if (password !== confirmPassword)
+      throw new BadRequestException('Password does not match');
+
+    // Validate password manually inside the service
+    if (!this.isValidPassword(password)) {
       throw new BadRequestException(
-        'Username already exists. Please user another username!',
+        'Password must be at least 6 characters long, contain 1 uppercase letter, and 1 special character.',
       );
     }
 
@@ -195,17 +198,37 @@ export class UsersService {
       );
     }
 
+    // Check phone number has exist?
+    const isPhoneNumberExist = await this.isPhoneNumberExist(phoneNumber);
+    if (isPhoneNumberExist) {
+      throw new BadRequestException(
+        `Phone number ${phoneNumber} already exists. Please use another phone number!`,
+      );
+    }
+
+    // Generate a unique username
+    const baseUsername = this.generateUsername(fullName);
+    let username = baseUsername;
+    let count = 1;
+
+    while (await this.isUserExist(username)) {
+      username = `${baseUsername}${count}`;
+      count++;
+    }
+
     // Hash password
     const hashedPassword = await hashPassword(password);
 
     const user = await this.userModel.create({
-      username,
+      fullName: fullName,
+      username: username,
       email,
+      phoneNunber: phoneNumber,
       password: hashedPassword,
       isActive: false,
       role: ROLES.user,
       codeId: uuidv4(),
-      codeExpired: dayjs().add(5, 'minutes'),
+      codeExpired: dayjs().add(10, 'minutes'),
     });
 
     // Send mail
@@ -219,7 +242,7 @@ export class UsersService {
       },
     });
 
-    return { _id: user._id };
+    return { _id: user._id, username: user.username };
   }
 
   async resendCode(resendCodeDto: ResendCodeDto) {
@@ -245,5 +268,26 @@ export class UsersService {
     });
 
     return {};
+  }
+
+  async isUsernameExist(username: string): Promise<boolean> {
+    return !!(await this.userModel.findOne({ username }));
+  }
+
+  async isPhoneNumberExist(phoneNumber: string): Promise<boolean> {
+    return !!(await this.userModel.findOne({ phoneNumber }));
+  }
+
+  private generateUsername(fullName: string): string {
+    return fullName
+      .toLowerCase()
+      .replace(/\s+/g, '') // Remove spaces
+      .replace(/[^a-z0-9]/g, '') // Remove special characters
+      .substring(0, 15); // Limit length (optional)
+  }
+
+  private isValidPassword(password: string): boolean {
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[\W_]).{6,}$/;
+    return passwordRegex.test(password);
   }
 }

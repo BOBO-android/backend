@@ -24,8 +24,8 @@ export class AuthService {
     private readonly mailerService: MailerService,
   ) {}
 
-  async validateUser(username: string, password: string) {
-    const user = await this.usersService.findByUsername(username);
+  async validateUser(email: string, password: string) {
+    const user = await this.usersService.findByEmail({ email });
     if (!user) return null;
 
     const isValidPassword = await comparePassword(password, user.password);

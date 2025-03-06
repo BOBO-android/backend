@@ -1,15 +1,28 @@
-import { IsEmail, IsNotEmpty, Length } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsPhoneNumber, Matches } from 'class-validator';
 
 export class CreateAuthDto {
   @IsNotEmpty()
-  @Length(3, 50)
-  username: string;
+  fullName: string;
 
-  @IsNotEmpty()
   @IsEmail()
+  @IsNotEmpty()
   email: string;
 
   @IsNotEmpty()
-  @Length(6, 50)
+  @IsPhoneNumber('VN')
+  phoneNumber: string;
+
+  @IsNotEmpty()
+  @Matches(/^(?=.*[A-Z])(?=.*[\W_]).{6,}$/, {
+    message:
+      'Password must be at least 6 characters long, contain 1 uppercase letter, and 1 special character.',
+  })
   password: string;
+
+  @IsNotEmpty({ message: 'Confirm password is required' })
+  @Matches(/^(?=.*[A-Z])(?=.*[\W_]).{6,}$/, {
+    message:
+      'Password must be at least 6 characters long, contain 1 uppercase letter, and 1 special character.',
+  })
+  confirmPassword: string;
 }
