@@ -9,8 +9,8 @@ export class Token {
   @Prop({ ref: 'users', type: Types.ObjectId })
   userId: string;
 
-  @Prop({ type: [] })
-  refresTokensUsed: string[];
+  @Prop({ type: [String], default: [] })
+  refreshTokensUsed: string[];
 }
 
 export const TokenSchema = SchemaFactory.createForClass(Token);

@@ -1,9 +1,10 @@
 import { IsMongoId, IsNotEmpty } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CreateTokenDto {
   @IsNotEmpty()
   @IsMongoId()
-  userId: string;
+  userId: Types.ObjectId;
 
   @IsNotEmpty()
   refreshToken: string;

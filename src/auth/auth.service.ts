@@ -49,7 +49,7 @@ export class AuthService {
     });
 
     // Store refreshToken in the database
-    await this.tokenService.create({ userId: _id.toString(), refreshToken });
+    await this.tokenService.create({ userId: _id, refreshToken });
 
     return {
       user: {
@@ -196,7 +196,7 @@ export class AuthService {
     });
 
     // Store refreshToken in the database
-    await this.tokenService.create({
+    await this.tokenService.updateToken({
       userId: hasUser._id,
       refreshToken: newRefreshToken,
     });

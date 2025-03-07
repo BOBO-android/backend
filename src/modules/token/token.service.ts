@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTokenDto } from './dto/create-token.dto';
 import { Token } from './schemas/token.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
@@ -27,7 +27,7 @@ export class TokenService {
     const filter = { userId: userId };
     const update = {
       $set: { refreshToken }, // Update refreshToken field
-      $push: { refreshTokensUsed: refreshToken }, // Add refreshToken to the array
+      $push: { refreshTokensUsed: { $each: [refreshToken] } }, // Add refreshToken to the array
     };
     const options = { upsert: true, new: true };
 
@@ -39,7 +39,8 @@ export class TokenService {
   }
 
   async findOneByUserId(userId: string) {
-    const hasToken = await this.tokenModel.findOne({ userId });
+    const objectId = new Types.ObjectId(userId);
+    const hasToken = await this.tokenModel.findOne({ userId: objectId });
     if (!hasToken) throw new NotFoundException();
 
     return hasToken;
