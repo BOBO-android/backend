@@ -81,4 +81,21 @@ export class AuthController {
   ) {
     return this.authService.resetPassword(token, newPass);
   }
+
+  @Post('refresh-token')
+  @HttpCode(200)
+  @ResponseMessage('Reset password successfully')
+  refreshToken(
+    @Body('userId') userId: string,
+    @Body('refreshToken') refreshToken: string,
+  ) {
+    return this.authService.handleRefreshToken(userId, refreshToken);
+  }
+
+  @Post('logout')
+  @ResponseMessage('Logout successfully')
+  async logout(@Request() req) {
+    const userId = req.user._id;
+    return this.authService.logout(userId);
+  }
 }

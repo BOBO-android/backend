@@ -1,9 +1,9 @@
-import { VerifyAccountDto } from './dto/verify-account.dto';
 import {
   BadRequestException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { VerifyAccountDto } from './dto/verify-account.dto';
 import { UsersService } from '@/modules/users/users.service';
 import { comparePassword, hashPassword } from '@/helpers';
 import { UserType } from './auth';
@@ -14,11 +14,13 @@ import { ResendCodeDto } from './dto/resend-code.dto';
 import { RedisService } from '@/modules/redis/redis.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { generateResetCode } from '@/utils';
+import { TokenService } from '@/modules/token/token.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
+    private tokenService: TokenService,
     private jwtService: JwtService,
     private redisService: RedisService,
     private readonly mailerService: MailerService,
@@ -38,18 +40,43 @@ export class AuthService {
     const { _id, email, username } = user;
     const payload = { email, sub: _id };
 
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '30m', // Expiration for accessToken
+    });
+
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '1d', // Expiration for refreshToken
+    });
+
+    // Store refreshToken in the database
+    await this.tokenService.create({ userId: _id.toString(), refreshToken });
+
     return {
       user: {
         _id,
         email,
         username,
       },
-      accessToken: this.jwtService.sign(payload),
+      accessToken: accessToken,
+      refreshToken: refreshToken,
     };
   }
 
   async handleRegister(registerDto: CreateAuthDto) {
     return await this.usersService.handleRegister(registerDto);
+  }
+
+  async logout(userId: string) {
+    const hasUser = await this.usersService.findOneById(userId);
+    if (!hasUser) throw new BadRequestException('User not found');
+
+    const hasToken = await this.tokenService.findOneByUserId(userId);
+    if (!hasToken) throw new BadRequestException('User is already logged out');
+
+    // Delete the refresh token
+    await hasToken.deleteOne();
+
+    return {};
   }
 
   async verifyAccount(verifyAccountDto: VerifyAccountDto) {
@@ -146,5 +173,37 @@ export class AuthService {
     await this.redisService.del(`reset-password-token:${email}`);
 
     return { message: 'Password reset successfully.' };
+  }
+
+  async handleRefreshToken(userId: string, refreshToken: string) {
+    const hasToken = await this.tokenService.findOneByUserId(userId);
+    if (!hasToken) throw new UnauthorizedException('Invalid refresh token');
+
+    // Compare stored refreshToken with provided one
+    if (hasToken.refreshToken !== refreshToken)
+      throw new UnauthorizedException('Invalid refresh token');
+
+    const hasUser: any = await this.usersService.findOneById(userId);
+
+    const payload = { email: hasUser.email, sub: hasUser._id };
+
+    const newAccessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '30m', // Expiration for accessToken
+    });
+
+    const newRefreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '1d', // Expiration for refreshToken
+    });
+
+    // Store refreshToken in the database
+    await this.tokenService.create({
+      userId: hasUser._id,
+      refreshToken: newRefreshToken,
+    });
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    };
   }
 }

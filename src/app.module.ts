@@ -12,6 +12,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { TokenModule } from './modules/token/token.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
       }),
       inject: [ConfigService],
     }),
+    TokenModule,
   ],
   controllers: [AppController],
   providers: [
