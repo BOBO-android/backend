@@ -1,0 +1,39 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
+
+export type StoreDocument = Store & Document;
+
+@Schema({ timestamps: true })
+export class Store {
+  @Prop({ required: true, unique: true })
+  name: string;
+
+  @Prop({ required: true, unique: true })
+  slug: string;
+
+  @Prop({ type: String, required: true })
+  description: string;
+
+  @Prop({ type: String, required: true })
+  address: string;
+
+  @Prop({ ref: 'User', type: Types.ObjectId, required: true, unique: true })
+  owner: Types.ObjectId;
+
+  @Prop({ type: Number, default: 0 })
+  followerCount: number;
+
+  @Prop({ type: Number, default: 0 })
+  propductsCount: number;
+
+  @Prop({ type: Boolean, default: false })
+  isActive: boolean;
+
+  @Prop({ type: String, required: true })
+  codeId: string;
+
+  @Prop({ type: Date, required: true })
+  codeExpired: Date;
+}
+
+export const StoreSchema = SchemaFactory.createForClass(Store);
