@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { TokenModule } from './modules/token/token.module';
+import { CategoriesModule } from './modules/categories/categories.module';
 
 @Module({
   imports: [
@@ -20,6 +21,8 @@ import { TokenModule } from './modules/token/token.module';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     UsersModule,
     AuthModule,
+    TokenModule,
+    CategoriesModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -56,7 +59,6 @@ import { TokenModule } from './modules/token/token.module';
       }),
       inject: [ConfigService],
     }),
-    TokenModule,
   ],
   controllers: [AppController],
   providers: [

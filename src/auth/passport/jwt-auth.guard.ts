@@ -32,10 +32,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     // You can throw an exception based on either "info" or "err" arguments
     if (err || !user) {
       throw (
-        err ||
-        new UnauthorizedException(
-          'Token invalid or token not exists in header!',
-        )
+        err || new UnauthorizedException('Token invalid or token not exists!')
       );
     }
 

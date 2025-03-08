@@ -3,6 +3,7 @@ config();
 
 export const ROLES = {
   user: process.env.ROLE_USER || 'User',
+  shop: process.env.ROLE_SHOP || 'Shop',
   admin: process.env.ROLE_ADMIN || 'Admin',
 };
 
