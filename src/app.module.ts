@@ -14,6 +14,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { MailerModule } from '@nestjs-modules/mailer';
 import { TokenModule } from './modules/token/token.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { StoreModule } from './modules/store/store.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CategoriesModule } from './modules/categories/categories.module';
     AuthModule,
     TokenModule,
     CategoriesModule,
+    StoreModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

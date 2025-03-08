@@ -1,24 +1,24 @@
 import _ from 'lodash';
 import Mongoose from 'mongoose';
 
-export const getInfo = ({
+export const getInfo = <T extends object, K extends keyof T>({
   object,
   fields,
 }: {
-  object: object;
-  fields: string[];
+  object: T;
+  fields: K[];
 }) => {
-  return _.pick(object, fields);
+  return _.pick(object, fields) as Pick<T, K>;
 };
 
-export const omitInfo = ({
+export const omitInfo = <T extends object, K extends keyof T>({
   object,
   fields,
 }: {
-  object: object;
-  fields: string[];
+  object: T;
+  fields: K[];
 }) => {
-  return _.omit(object, fields);
+  return _.omit(object, fields) as Omit<T, K>;
 };
 
 export const isValidObjectId = (id: string): boolean => {

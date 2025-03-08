@@ -7,17 +7,12 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { Request as ExpressRequest } from 'express';
 import { LocalAuthGuard } from './passport/local-auth.guard';
 import { AuthService } from './auth.service';
-import { UserType } from './auth';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { VerifyAccountDto } from './dto/verify-account.dto';
 import { ResendCodeDto } from './dto/resend-code.dto';
-
-interface RequestWithUser extends ExpressRequest {
-  user: UserType;
-}
+import { RequestWithUser } from '@/common/interfaces/request-with-user.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -94,7 +89,7 @@ export class AuthController {
 
   @Post('logout')
   @ResponseMessage('Logout successfully')
-  async logout(@Request() req) {
+  async logout(@Request() req: any) {
     const userId = req.user._id;
     return this.authService.logout(userId);
   }
