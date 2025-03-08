@@ -13,6 +13,7 @@ import slugify from 'slugify';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
 import { randomInt } from 'crypto';
+import { VerifyStoreDto } from './dto/verify-store.dto';
 
 @Injectable()
 export class StoreService {
@@ -65,5 +66,27 @@ export class StoreService {
     });
 
     return { storeId: newStore._id, userId: user._id };
+  }
+
+  async verifyStore(verifyDto: VerifyStoreDto, ownerId: Types.ObjectId) {
+    const { storeId, codeId } = verifyDto;
+
+    // Check if user exists
+    const hasUser = await this.usersService.findOneById(ownerId.toString());
+    if (!hasUser) throw new NotFoundException('User account not found!');
+
+    const hasStore = await this.storeModel.findOne({ owner: ownerId });
+    if (!hasStore) throw new NotFoundException('Store not found!');
+    if (hasStore._id.toString() !== storeId) throw new BadRequestException();
+    if (hasStore.isActive) return {};
+
+    if (codeId !== hasStore.codeId)
+      throw new BadRequestException('The code invalid or expried!');
+    if (!dayjs().isBefore(hasStore.codeExpired))
+      throw new BadRequestException('The code invalid or expried!');
+
+    await hasStore.updateOne({ isActive: true });
+
+    return {};
   }
 }
