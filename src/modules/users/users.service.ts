@@ -124,7 +124,7 @@ export class UsersService {
       throw new BadRequestException();
     }
 
-    const result = await this.userModel.findOne({ _id });
+    const result = await this.userModel.findById(_id);
 
     return getInfo({
       object: result,
