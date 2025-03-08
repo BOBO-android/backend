@@ -128,7 +128,7 @@ export class UsersService {
 
     return getInfo({
       object: result,
-      fields: ['_id', 'username', 'email', 'role', 'isActive'],
+      fields: ['_id', 'fullName', 'username', 'email', 'role', 'isActive'],
     });
   }
 
@@ -234,7 +234,7 @@ export class UsersService {
     // Send mail
     this.mailerService.sendMail({
       to: user.email, // List to reciver
-      subject: 'Active your account at SIC', // Subject line
+      subject: 'Active your account at BoBo', // Subject line
       template: 'register',
       context: {
         name: user?.username ?? user?.email,
