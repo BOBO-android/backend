@@ -29,4 +29,8 @@ export class CategoriesService {
     const newCategory = new this.categoryModel({ ...createCategoryDto, slug });
     return newCategory.save();
   }
+
+  async getAllCategories() {
+    return await this.categoryModel.find();
+  }
 }
