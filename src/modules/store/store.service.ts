@@ -14,6 +14,7 @@ import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
 import { randomInt } from 'crypto';
 import { VerifyStoreDto } from './dto/verify-store.dto';
+import { ResendCodeDto } from './dto/resend-code.dto';
 
 @Injectable()
 export class StoreService {
@@ -46,7 +47,7 @@ export class StoreService {
     // Save store in the database
     const newStore = await this.storeModel.create({
       ...createStoreDto,
-      owner: ownerId,
+      owner: new Types.ObjectId(ownerId),
       slug,
       codeId: activationCode,
       codeExpired: dayjs().add(10, 'minutes'),
@@ -75,7 +76,9 @@ export class StoreService {
     const hasUser = await this.usersService.findOneById(ownerId.toString());
     if (!hasUser) throw new NotFoundException('User account not found!');
 
-    const hasStore = await this.storeModel.findOne({ owner: ownerId });
+    const hasStore = await this.storeModel.findOne({
+      owner: new Types.ObjectId(ownerId),
+    });
     if (!hasStore) throw new NotFoundException('Store not found!');
     if (hasStore._id.toString() !== storeId) throw new BadRequestException();
     if (hasStore.isActive) return {};
@@ -86,6 +89,43 @@ export class StoreService {
       throw new BadRequestException('The code invalid or expried!');
 
     await hasStore.updateOne({ isActive: true });
+
+    return {};
+  }
+
+  async resendCode(resendCodeDto: ResendCodeDto, ownerId: Types.ObjectId) {
+    const { email } = resendCodeDto;
+
+    const foundUser = await this.usersService.findOneByEmail(email);
+    if (!foundUser) throw new BadRequestException();
+
+    const foundStore = await this.storeModel.findOne({ owner: foundUser._id });
+    if (!foundStore) throw new BadRequestException();
+    if (foundStore.owner.toString() !== ownerId.toString())
+      throw new BadRequestException();
+    if (foundStore.isActive)
+      throw new BadRequestException('Store has been activated!');
+
+    // Generate a 4-digit numeric activation code
+    const activationCode = randomInt(1000, 9999).toString(); // Ensures a 4-digit code
+    foundStore.codeId = activationCode;
+    foundStore.codeExpired = dayjs().add(10, 'minutes').toDate();
+
+    await foundStore.save();
+
+    // Send mail
+    this.mailerService.sendMail({
+      to: foundUser.email, // List to reciver
+      subject: 'Active your store at BoBo', // Subject line
+      template: 'register-store',
+      context: {
+        ownerName:
+          foundUser?.fullName ?? foundUser?.username ?? foundUser?.email,
+        storeName: foundStore.name,
+        activationCode: foundStore.codeId,
+        supportLink: '',
+      },
+    });
 
     return {};
   }
