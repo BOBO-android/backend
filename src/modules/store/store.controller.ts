@@ -4,6 +4,7 @@ import { CreateStoreDto } from './dto/create-store.dto';
 import { ResponseMessage } from '@/decorator/customize';
 import { RequestWithUser } from '@/common/interfaces/request-with-user.interface';
 import { VerifyStoreDto } from './dto/verify-store.dto';
+import { ResendCodeDto } from './dto/resend-code.dto';
 
 @Controller('stores')
 export class StoreController {
@@ -25,5 +26,16 @@ export class StoreController {
   verify(@Request() req: RequestWithUser, @Body() verifyDto: VerifyStoreDto) {
     const userId = req.user._id;
     return this.storeService.verifyStore(verifyDto, userId);
+  }
+
+  @Post('resend-code')
+  @HttpCode(200)
+  @ResponseMessage('Resend code successfully')
+  resendCode(
+    @Request() req: RequestWithUser,
+    @Body() resendCodeDto: ResendCodeDto,
+  ) {
+    const userId = req.user._id;
+    return this.storeService.resendCode(resendCodeDto, userId);
   }
 }
