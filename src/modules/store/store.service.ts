@@ -15,12 +15,13 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { randomInt } from 'crypto';
 import { VerifyStoreDto } from './dto/verify-store.dto';
 import { ResendCodeDto } from './dto/resend-code.dto';
+import aqp from 'api-query-params';
 
 @Injectable()
 export class StoreService {
   constructor(
     @InjectModel(Store.name) private storeModel: Model<Store>,
-    private usersService: UsersService, // Inject UsersService
+    private readonly usersService: UsersService, // Inject UsersService
     private readonly mailerService: MailerService,
   ) {}
 
@@ -128,5 +129,27 @@ export class StoreService {
     });
 
     return {};
+  }
+
+  async findAll(query: string, curent: number, pageSize: number) {
+    const { filter, sort } = aqp(query);
+    if (filter.current || filter.current === 0) delete filter.current;
+    if (filter.pageSize || filter.pageSize === 0) delete filter.pageSize;
+
+    if (!curent || curent < 1) curent = 1;
+    if (!pageSize || pageSize < 1) pageSize = 1;
+
+    const totalItems = (await this.storeModel.find(filter).lean()).length;
+    const totalPage = Math.ceil(totalItems / pageSize);
+    const skip = (curent - 1) * pageSize;
+
+    const results = await this.storeModel
+      .find(filter)
+      .limit(pageSize)
+      .skip(skip)
+      .select('-password')
+      .sort(sort as any);
+
+    return { results, totalPage, totalItems };
   }
 }
