@@ -15,6 +15,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { TokenModule } from './modules/token/token.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { StoreModule } from './modules/store/store.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { StoreModule } from './modules/store/store.module';
     TokenModule,
     CategoriesModule,
     StoreModule,
+    AdminModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
