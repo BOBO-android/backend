@@ -153,4 +153,46 @@ export class FoodService {
 
     return {};
   }
+
+  async getPublicOfferedFoods(
+    query: string,
+    current: number = 1,
+    pageSize: number = 10,
+  ) {
+    // Parse query parameters
+    const { filter, sort } = aqp(query);
+    delete filter.current;
+    delete filter.pageSize;
+
+    // Ensure only available, offered
+    filter.isAvailable = true;
+    filter.isOffered = true;
+
+    // Ensure pagination values are valid
+    current = Math.max(1, current);
+    pageSize = Math.max(1, pageSize);
+
+    // Count total items efficiently
+    const totalItems = await this.foodModel.countDocuments(filter);
+
+    // Calculate total pages
+    const totalPage = Math.ceil(totalItems / pageSize);
+    const skip = (current - 1) * pageSize;
+
+    // Fetch paginated foods
+    const foods = await this.foodModel
+      .find(filter)
+      .sort(sort as any)
+      .limit(pageSize)
+      .skip(skip)
+      .lean();
+
+    // Calculate final price after discount
+    const foodsWithDiscount = foods.map((food) => ({
+      ...food,
+      finalPrice: food.price * (1 - food.discount / 100),
+    }));
+
+    return { foods: foodsWithDiscount, totalPage, totalItems, current };
+  }
 }

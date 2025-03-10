@@ -1,5 +1,5 @@
-import { FoodService } from './food.service';
-import { CreateFoodDto } from './dto/create-food.dto';
+import { FoodService } from '../food.service';
+import { CreateFoodDto } from '../dto/create-food.dto';
 import {
   Controller,
   Post,
@@ -15,7 +15,7 @@ import {
 import { ResponseMessage } from '@/decorator/customize';
 import { Role, Roles } from '@/decorator/roles.decorator';
 import { RequestWithUser } from '@/common/interfaces/request-with-user.interface';
-import { UpdateFoodDto } from './dto/update-food.dto';
+import { UpdateFoodDto } from '../dto/update-food.dto';
 
 @Roles(Role.Shop)
 @Controller('stores')
