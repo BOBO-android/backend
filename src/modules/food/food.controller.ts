@@ -9,10 +9,12 @@ import {
   Get,
   Param,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { ResponseMessage } from '@/decorator/customize';
 import { Role, Roles } from '@/decorator/roles.decorator';
 import { RequestWithUser } from '@/common/interfaces/request-with-user.interface';
+import { UpdateFoodDto } from './dto/update-food.dto';
 
 @Roles(Role.Shop)
 @Controller('stores')
@@ -48,5 +50,17 @@ export class FoodController {
       +current,
       +pageSize,
     );
+  }
+
+  @Patch(':storeId/foods/:foodId')
+  @ResponseMessage('Food updated successfully')
+  updateFood(
+    @Request() req: RequestWithUser,
+    @Param('storeId') storeId: string,
+    @Param('foodId') foodId: string,
+    @Body() updateFoodDto: UpdateFoodDto,
+  ) {
+    const ownerId = req.user._id;
+    return this.foodService.updateFood(storeId, foodId, ownerId, updateFoodDto);
   }
 }
