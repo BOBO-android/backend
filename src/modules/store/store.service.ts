@@ -16,6 +16,7 @@ import { randomInt } from 'crypto';
 import { VerifyStoreDto } from './dto/verify-store.dto';
 import { ResendCodeDto } from './dto/resend-code.dto';
 import aqp from 'api-query-params';
+import { STATUS_STORE } from '@/constant';
 
 @Injectable()
 export class StoreService {
@@ -50,6 +51,7 @@ export class StoreService {
       ...createStoreDto,
       owner: new Types.ObjectId(ownerId),
       slug,
+      status: STATUS_STORE.PENDING,
       codeId: activationCode,
       codeExpired: dayjs().add(10, 'minutes'),
     });
@@ -89,7 +91,7 @@ export class StoreService {
     if (!dayjs().isBefore(hasStore.codeExpired))
       throw new BadRequestException('The code invalid or expried!');
 
-    await hasStore.updateOne({ isActive: true });
+    await hasStore.updateOne({ isActive: true, status: STATUS_STORE.ACTIVE });
 
     return {};
   }
@@ -151,5 +153,25 @@ export class StoreService {
       .sort(sort as any);
 
     return { results, totalPage, totalItems };
+  }
+
+  async updateStatus(
+    storeId: string,
+    status: 'active' | 'inactive' | 'violation',
+  ) {
+    const statusUpdates = {
+      active: { status, isActive: true, isViolation: false },
+      inactive: { status, isActive: false, isViolation: false },
+      violation: { status, isActive: false, isViolation: true },
+    };
+
+    const update = statusUpdates[status];
+
+    const store = await this.storeModel.findByIdAndUpdate(
+      storeId,
+      update,
+      { new: true, runValidators: true }, // Return updated store
+    );
+    return store;
   }
 }

@@ -1,7 +1,16 @@
-import { Controller, Get, HttpCode, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Query,
+} from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { Role, Roles } from '@/decorator/roles.decorator';
 import { ResponseMessage } from '@/decorator/customize';
+import { UpdateStoreStatusDto } from './dto/update-store-status.dto';
 
 @Roles(Role.Admin)
 @Controller('admin')
@@ -17,5 +26,18 @@ export class AdminController {
     @Query('pageSize') pageSize: string,
   ) {
     return this.adminService.findAll(query, +current, +pageSize);
+  }
+
+  @HttpCode(200)
+  @Patch('/stores/:storeId/status')
+  @ResponseMessage('Store status updated successfully')
+  async updateStoreStatus(
+    @Param('storeId') storeId: string,
+    @Body() updateStoreStatusDto: UpdateStoreStatusDto,
+  ) {
+    return await this.adminService.updateStatus(
+      storeId,
+      updateStoreStatusDto.status,
+    );
   }
 }
