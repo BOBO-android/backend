@@ -26,6 +26,7 @@ export class UsersController {
   }
 
   @Get()
+  @HttpCode(200)
   @ResponseMessage('Get all users successfully')
   findAll(
     @Query() query: string,
@@ -36,6 +37,7 @@ export class UsersController {
   }
 
   @Get(':id')
+  @HttpCode(200)
   @ResponseMessage('Get an user successfully')
   findOne(@Param('id') id: string) {
     return this.usersService.findOneById(id);
@@ -51,12 +53,14 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @HttpCode(200)
   @ResponseMessage('Update an user successfully')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
+  @HttpCode(200)
   @ResponseMessage('Delete an user successfully')
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);

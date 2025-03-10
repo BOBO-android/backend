@@ -16,7 +16,7 @@ import { randomInt } from 'crypto';
 import { VerifyStoreDto } from './dto/verify-store.dto';
 import { ResendCodeDto } from './dto/resend-code.dto';
 import aqp from 'api-query-params';
-import { STATUS_STORE } from '@/constant';
+import { ROLES, STATUS_STORE } from '@/constant';
 
 @Injectable()
 export class StoreService {
@@ -30,7 +30,9 @@ export class StoreService {
     const { name, email } = createStoreDto;
 
     // Check if user exists
-    const user = await this.usersService.findOneById(ownerId.toString());
+    const user = await this.usersService.findOneByIdDocument(
+      ownerId.toString(),
+    );
     if (!user) throw new NotFoundException('User account not found');
     if (user.email !== email) throw new BadRequestException();
 
@@ -55,6 +57,9 @@ export class StoreService {
       codeId: activationCode,
       codeExpired: dayjs().add(10, 'minutes'),
     });
+
+    user.role = ROLES.shop;
+    await user.save();
 
     // Send mail
     this.mailerService.sendMail({
@@ -173,5 +178,11 @@ export class StoreService {
       { new: true, runValidators: true }, // Return updated store
     );
     return store;
+  }
+
+  async findByOwnerId(ownerId: string) {
+    return await this.storeModel.findOne({
+      owner: new Types.ObjectId(ownerId),
+    });
   }
 }
