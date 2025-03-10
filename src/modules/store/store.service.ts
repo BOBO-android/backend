@@ -138,23 +138,22 @@ export class StoreService {
     return {};
   }
 
-  async findAll(query: string, curent: number, pageSize: number) {
+  async findAll(query: string, current: number, pageSize: number) {
     const { filter, sort } = aqp(query);
     if (filter.current || filter.current === 0) delete filter.current;
     if (filter.pageSize || filter.pageSize === 0) delete filter.pageSize;
 
-    if (!curent || curent < 1) curent = 1;
+    if (!current || current < 1) current = 1;
     if (!pageSize || pageSize < 1) pageSize = 1;
 
     const totalItems = (await this.storeModel.find(filter).lean()).length;
     const totalPage = Math.ceil(totalItems / pageSize);
-    const skip = (curent - 1) * pageSize;
+    const skip = (current - 1) * pageSize;
 
     const results = await this.storeModel
       .find(filter)
       .limit(pageSize)
       .skip(skip)
-      .select('-password')
       .sort(sort as any);
 
     return { results, totalPage, totalItems };
