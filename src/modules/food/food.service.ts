@@ -10,6 +10,7 @@ import { CreateFoodDto } from './dto/create-food.dto';
 import { StoreService } from '../store/store.service';
 import { convertToObjectId } from '@/helpers';
 import aqp from 'api-query-params';
+import { UpdateFoodDto } from './dto/update-food.dto';
 
 @Injectable()
 export class FoodService {
@@ -82,5 +83,40 @@ export class FoodService {
       .exec();
 
     return { foods, totalPage, totalItems, current };
+  }
+
+  async updateFood(
+    storeId: string,
+    foodId: string,
+    ownerId: Types.ObjectId,
+    updateFoodDto: UpdateFoodDto,
+  ) {
+    if (!Types.ObjectId.isValid(storeId) || !Types.ObjectId.isValid(foodId)) {
+      throw new NotFoundException('Invalid store or food ID');
+    }
+
+    // Validate store ownership
+    const foundStore = await this.storeService.findByOwnerId(
+      ownerId.toString(),
+    );
+    if (!foundStore || foundStore._id.toString() !== storeId) {
+      throw new BadRequestException('Store does not belong to the owner');
+    }
+
+    // Find food in store
+    const food = await this.foodModel.findOne({
+      _id: convertToObjectId(foodId),
+      storeId: convertToObjectId(storeId),
+    });
+    if (!food) throw new NotFoundException('Food item not found');
+
+    // Update food
+    const updatedFood = await this.foodModel.findByIdAndUpdate(
+      foodId,
+      updateFoodDto,
+      { new: true, runValidators: true },
+    );
+
+    return updatedFood;
   }
 }
