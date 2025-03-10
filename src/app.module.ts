@@ -16,6 +16,7 @@ import { TokenModule } from './modules/token/token.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { StoreModule } from './modules/store/store.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { FoodModule } from './modules/food/food.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AdminModule } from './modules/admin/admin.module';
     CategoriesModule,
     StoreModule,
     AdminModule,
+    FoodModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

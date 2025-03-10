@@ -136,6 +136,14 @@ export class UsersService {
     });
   }
 
+  async findOneByIdDocument(_id: string) {
+    if (!isValidObjectId(_id)) {
+      throw new BadRequestException();
+    }
+
+    return await this.userModel.findById(_id);
+  }
+
   async findOneByUsername(username: string) {
     return await this.userModel.findOne({ username });
   }
