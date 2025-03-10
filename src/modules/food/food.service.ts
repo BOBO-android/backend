@@ -119,4 +119,38 @@ export class FoodService {
 
     return updatedFood;
   }
+
+  async softDeleteFood(
+    storeId: string,
+    foodId: string,
+    ownerId: Types.ObjectId,
+  ) {
+    if (!Types.ObjectId.isValid(storeId) || !Types.ObjectId.isValid(foodId)) {
+      throw new NotFoundException('Invalid store or food ID!');
+    }
+
+    // Validate store ownership
+    const foundStore = await this.storeService.findByOwnerId(
+      ownerId.toString(),
+    );
+    if (!foundStore || foundStore._id.toString() !== storeId) {
+      throw new BadRequestException('Store does not belong to the owner!');
+    }
+
+    // Find food in store
+    const food = await this.foodModel.findOne({
+      _id: convertToObjectId(foodId),
+      storeId: convertToObjectId(storeId),
+    });
+    if (!food)
+      throw new NotFoundException('Food item not found or already deleted!');
+
+    // Soft delete the food (set deletedAt timestamp)
+    await this.foodModel.updateOne(
+      { _id: convertToObjectId(foodId) },
+      { deletedAt: new Date(), isDeleted: true },
+    );
+
+    return {};
+  }
 }
