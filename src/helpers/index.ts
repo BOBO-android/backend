@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { Types } from 'mongoose';
 
 export const hashPassword = async (
   plainPassword: string,
@@ -20,4 +21,8 @@ export const comparePassword = async (
   } catch (error) {
     console.log(error);
   }
+};
+
+export const convertToObjectId = (id: string) => {
+  return new Types.ObjectId(id);
 };

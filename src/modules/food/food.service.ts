@@ -1,9 +1,15 @@
 import { Model, Types } from 'mongoose';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Food, FoodDocument } from './schemas/food.schema';
 import { CreateFoodDto } from './dto/create-food.dto';
 import { StoreService } from '../store/store.service';
+import { convertToObjectId } from '@/helpers';
+import aqp from 'api-query-params';
 
 @Injectable()
 export class FoodService {
@@ -27,5 +33,54 @@ export class FoodService {
       storeId: foundStore._id,
     });
     return newFood.save();
+  }
+
+  async getFoodsByStore(
+    storeId: string,
+    ownerId: Types.ObjectId,
+    query: string,
+    current: number = 1,
+    pageSize: number = 10,
+  ) {
+    if (!Types.ObjectId.isValid(storeId)) {
+      throw new NotFoundException('Invalid store ID');
+    }
+
+    // Validate if the store belongs to the owner
+    const foundStore = await this.storeService.findByOwnerId(
+      ownerId.toString(),
+    );
+    if (!foundStore || foundStore._id.toString() !== storeId) {
+      throw new BadRequestException('Store does not belong to the owner');
+    }
+
+    // Parse query parameters
+    const { filter, sort } = aqp(query);
+    delete filter.current;
+    delete filter.pageSize;
+
+    // Ensure pagination values are valid
+    current = Math.max(1, current);
+    pageSize = Math.max(1, pageSize);
+
+    // Count total items efficiently
+    const totalItems = await this.foodModel.countDocuments({
+      ...filter,
+      storeId: convertToObjectId(storeId),
+    });
+
+    // Calculate total pages
+    const totalPage = Math.ceil(totalItems / pageSize);
+    const skip = (current - 1) * pageSize;
+
+    // Fetch paginated foods
+    const foods = await this.foodModel
+      .find({ ...filter, storeId: convertToObjectId(storeId) })
+      .sort(sort as any)
+      .skip(skip)
+      .limit(pageSize)
+      .exec();
+
+    return { foods, totalPage, totalItems, current };
   }
 }
