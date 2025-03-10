@@ -39,6 +39,12 @@ export class Food {
 
   @Prop({ default: null })
   deletedAt?: Date | null; // Soft delete field
+
+  @Prop({ default: false })
+  isOffered: boolean; // Indicates whether the food is currently on offer
+
+  @Prop({ default: 0, min: 0, max: 100 })
+  discount: number; // Discount percentage (0-100)
 }
 
 export const FoodSchema = SchemaFactory.createForClass(Food);
