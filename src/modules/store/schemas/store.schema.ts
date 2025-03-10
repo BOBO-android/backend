@@ -1,3 +1,4 @@
+import { STATUS_STORE } from '@/constant';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
@@ -26,8 +27,23 @@ export class Store {
   @Prop({ type: Number, default: 0 })
   propductsCount: number;
 
+  @Prop({
+    required: true,
+    enum: [
+      STATUS_STORE.ACTIVE,
+      STATUS_STORE.INACTIVE,
+      STATUS_STORE.PENDING,
+      STATUS_STORE.VIOLATION,
+    ],
+    default: STATUS_STORE.PENDING,
+  }) // Example statuses
+  status: string;
+
   @Prop({ type: Boolean, default: false })
   isActive: boolean;
+
+  @Prop({ type: Boolean, default: false })
+  isViolation: boolean;
 
   @Prop({ type: String, required: true })
   codeId: string;

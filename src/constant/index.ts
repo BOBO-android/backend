@@ -12,3 +12,10 @@ export const STATUS_POST = {
   draft: 'draft',
   deleted: 'deleted',
 };
+
+export const STATUS_STORE = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+  PENDING: 'pending',
+  VIOLATION: 'violation',
+};

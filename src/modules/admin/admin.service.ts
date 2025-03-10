@@ -8,4 +8,11 @@ export class AdminService {
   async findAll(query: string, curent: number, pageSize: number) {
     return await this.storeService.findAll(query, curent, pageSize);
   }
+
+  async updateStatus(
+    storeId: string,
+    status: 'active' | 'inactive' | 'violation',
+  ) {
+    return await this.storeService.updateStatus(storeId, status);
+  }
 }
