@@ -10,6 +10,7 @@ import {
   Param,
   Query,
   Patch,
+  Delete,
 } from '@nestjs/common';
 import { ResponseMessage } from '@/decorator/customize';
 import { Role, Roles } from '@/decorator/roles.decorator';
@@ -62,5 +63,17 @@ export class FoodController {
   ) {
     const ownerId = req.user._id;
     return this.foodService.updateFood(storeId, foodId, ownerId, updateFoodDto);
+  }
+
+  // Soft delete a food item
+  @Delete(':storeId/foods/:foodId')
+  @ResponseMessage('Food deleted successfully')
+  softDeleteFood(
+    @Request() req: RequestWithUser,
+    @Param('storeId') storeId: string,
+    @Param('foodId') foodId: string,
+  ) {
+    const ownerId = req.user._id;
+    return this.foodService.softDeleteFood(storeId, foodId, ownerId);
   }
 }
