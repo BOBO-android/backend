@@ -202,4 +202,23 @@ export class FoodService {
     if (!food) throw new ConflictException('Food not found!');
     return food;
   }
+
+  async searchFoods(query: string) {
+    const filter = this.buildSearchFilter(query);
+    const foods = await this.foodModel.find(filter).lean();
+
+    return { foods, total: foods.length };
+  }
+
+  private buildSearchFilter(query?: string) {
+    const filter: any = {
+      isAvailable: true,
+    };
+
+    if (query) {
+      filter.name = { $regex: new RegExp(query, 'i') }; // Case-insensitive search
+    }
+
+    return filter;
+  }
 }
