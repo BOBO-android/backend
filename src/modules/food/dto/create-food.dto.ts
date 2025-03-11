@@ -1,7 +1,7 @@
+import { IsValidMongoId } from '@/common/validators/is-mongo-id.decorator';
 import {
   IsString,
   IsNumber,
-  IsMongoId,
   IsBoolean,
   IsOptional,
   Min,
@@ -21,7 +21,7 @@ export class CreateFoodDto {
   @IsString()
   description: string;
 
-  @IsMongoId()
+  @IsValidMongoId()
   storeId: string;
 
   @IsOptional()

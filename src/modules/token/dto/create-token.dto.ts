@@ -1,9 +1,10 @@
-import { IsMongoId, IsNotEmpty } from 'class-validator';
+import { IsValidMongoId } from '@/common/validators/is-mongo-id.decorator';
+import { IsNotEmpty } from 'class-validator';
 import { Types } from 'mongoose';
 
 export class CreateTokenDto {
   @IsNotEmpty()
-  @IsMongoId()
+  @IsValidMongoId()
   userId: Types.ObjectId;
 
   @IsNotEmpty()
