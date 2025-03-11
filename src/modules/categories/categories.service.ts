@@ -37,7 +37,7 @@ export class CategoriesService {
   async findBySlug(slug: string): Promise<Category> {
     const category = await this.categoryModel.findOne({ slug });
     if (!category) {
-      throw new ConflictException('Category not found');
+      throw new ConflictException('Category not found!');
     }
     return category;
   }

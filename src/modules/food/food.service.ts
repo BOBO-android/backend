@@ -1,6 +1,7 @@
 import { Model, Types } from 'mongoose';
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -194,5 +195,11 @@ export class FoodService {
     }));
 
     return { foods: foodsWithDiscount, totalPage, totalItems, current };
+  }
+
+  async findBySlug(slug: string) {
+    const food = await this.foodModel.findOne({ slug, isAvailable: true });
+    if (!food) throw new ConflictException('Food not found!');
+    return food;
   }
 }
