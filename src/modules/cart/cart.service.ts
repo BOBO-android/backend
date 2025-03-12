@@ -17,7 +17,7 @@ export class CartService {
     private readonly foodRepository: FoodRepository,
   ) {}
 
-  async getCartByUserId(userId: Types.ObjectId): Promise<Cart[]> {
+  async getCartByUserId(userId: Types.ObjectId): Promise<Cart | null> {
     const cart = await this.cartModel.aggregate([
       { $match: { userId } },
       {
@@ -28,9 +28,7 @@ export class CartService {
           as: 'foodDetails',
         },
       },
-      {
-        $unwind: '$items',
-      },
+      { $unwind: '$items' }, // Unwind items to join each one with food
       {
         $lookup: {
           from: 'foods',
@@ -39,16 +37,14 @@ export class CartService {
           as: 'food',
         },
       },
-      {
-        $unwind: '$food',
-      },
+      { $unwind: '$food' },
       {
         $project: {
           _id: 1,
           userId: 1,
           createdAt: 1,
           updatedAt: 1,
-          items: {
+          item: {
             _id: '$items._id',
             foodId: '$food._id',
             name: '$food.name',
@@ -57,9 +53,18 @@ export class CartService {
           },
         },
       },
+      {
+        $group: {
+          _id: '$_id',
+          userId: { $first: '$userId' },
+          createdAt: { $first: '$createdAt' },
+          updatedAt: { $first: '$updatedAt' },
+          items: { $push: '$item' }, // Collect items into an array
+        },
+      },
     ]);
 
-    return cart; // Because aggregate returns an array
+    return cart.length ? cart[0] : null; // Return the first item (or null if no cart)
   }
 
   async addToCart(userId: Types.ObjectId, addToCartDto: AddToCartDto) {
