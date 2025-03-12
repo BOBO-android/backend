@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -46,5 +47,16 @@ export class CartController {
   ) {
     const userId = req.user._id;
     return this.cartService.updateCartItem(userId, foodId, quantity);
+  }
+
+  @Delete('items/:foodId')
+  @HttpCode(200)
+  @ResponseMessage('Item removed from cart successfully')
+  async removeItemFromCart(
+    @Request() req: RequestWithUser,
+    @Param('foodId') foodId: string,
+  ) {
+    const userId = req.user._id;
+    return this.cartService.removeItem(userId, foodId);
   }
 }
