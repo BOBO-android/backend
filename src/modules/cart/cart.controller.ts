@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpCode, Post, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Request,
+} from '@nestjs/common';
 import { CartService } from './cart.service';
 import { ResponseMessage } from '@/decorator/customize';
 import { RequestWithUser } from '@/common/interfaces/request-with-user.interface';
@@ -25,5 +34,17 @@ export class CartController {
   ) {
     const userId = req.user._id;
     return this.cartService.addToCart(userId, addToCartDto);
+  }
+
+  @Patch('items/:foodId')
+  @HttpCode(200)
+  @ResponseMessage('Cart item updated successfully')
+  async updateCartItem(
+    @Request() req: RequestWithUser,
+    @Param('foodId') foodId: string,
+    @Body('quantity') quantity: number,
+  ) {
+    const userId = req.user._id;
+    return this.cartService.updateCartItem(userId, foodId, quantity);
   }
 }
