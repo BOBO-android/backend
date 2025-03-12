@@ -13,6 +13,51 @@ export class CartService {
     private readonly foodRepository: FoodRepository,
   ) {}
 
+  async getCartByUserId(userId: Types.ObjectId): Promise<Cart[]> {
+    const cart = await this.cartModel.aggregate([
+      { $match: { userId } },
+      {
+        $lookup: {
+          from: 'foods',
+          localField: 'items.foodId',
+          foreignField: '_id',
+          as: 'foodDetails',
+        },
+      },
+      {
+        $unwind: '$items',
+      },
+      {
+        $lookup: {
+          from: 'foods',
+          localField: 'items.foodId',
+          foreignField: '_id',
+          as: 'food',
+        },
+      },
+      {
+        $unwind: '$food',
+      },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          items: {
+            _id: '$items._id',
+            foodId: '$food._id',
+            name: '$food.name',
+            price: '$food.price',
+            quantity: '$items.quantity',
+          },
+        },
+      },
+    ]);
+
+    return cart; // Because aggregate returns an array
+  }
+
   async addToCart(userId: Types.ObjectId, addToCartDto: AddToCartDto) {
     const { foodId, quantity } = addToCartDto;
 
