@@ -120,4 +120,20 @@ export class CartService {
     await cart.save();
     return cart.populate('items.foodId', 'name price');
   }
+
+  async removeItem(userId: Types.ObjectId, foodId: string) {
+    const cart = await this.cartModel.findOne({ userId });
+    if (!cart) throw new NotFoundException('Cart not found');
+
+    const foundCartItem = cart.items.find(
+      (item) => item.foodId.toString() === foodId,
+    );
+
+    if (!foundCartItem) throw new BadRequestException();
+
+    cart.items = cart.items.filter((item) => item.foodId.toString() !== foodId);
+
+    await cart.save();
+    return {};
+  }
 }
