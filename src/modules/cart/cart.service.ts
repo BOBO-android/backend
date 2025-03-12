@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Cart, CartDocument } from './schemas/cart.schema';
@@ -85,5 +89,30 @@ export class CartService {
 
     await cart.save();
     return {};
+  }
+
+  async updateCartItem(
+    userId: Types.ObjectId,
+    foodId: string,
+    quantity: number,
+  ): Promise<object> {
+    if (!quantity) throw new BadRequestException('Quantiy is required!');
+
+    const cart = await this.cartModel.findOne({ userId });
+    if (!cart) throw new NotFoundException('Cart not found');
+
+    const item = cart.items.find((item) => item.foodId.toString() === foodId);
+    if (!item) throw new NotFoundException('Food item not found in cart');
+
+    if (quantity <= 0) {
+      cart.items = cart.items.filter(
+        (item) => item.foodId.toString() !== foodId,
+      );
+    } else {
+      item.quantity = quantity;
+    }
+
+    await cart.save();
+    return cart.populate('items.foodId', 'name price');
   }
 }
