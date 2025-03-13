@@ -19,3 +19,21 @@ export const STATUS_STORE = {
   PENDING: 'pending',
   VIOLATION: 'violation',
 };
+
+export enum OrderStatus {
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
+  CANCELED = 'CANCELED',
+  FAILED = 'FAILED',
+}
+
+export enum PaymentMethod {
+  COD = 'COD', // Cash on Delivery
+  VNPAY = 'VNPAY', // VNPay
+}
+
+export enum PaymentStatus {
+  PAID = 'PAID',
+  UNPAID = 'UNPAID',
+}
