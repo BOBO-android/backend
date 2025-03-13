@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CartService } from '../cart/cart.service';
@@ -44,6 +48,37 @@ export class OrderService {
     await this.cartService.clearCart(userId);
 
     return order;
+  }
+
+  async getOrdersByUser(userId: string, ownerId: Types.ObjectId) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Invalid user ID format');
+    }
+
+    if (userId !== ownerId.toString()) throw new BadRequestException();
+
+    const orders = await this.orderModel
+      .find({ userId })
+      .populate({
+        path: 'items.foodId', // Populate 'foodId'
+        select: 'name price thumbnail', // Select required fields
+        model: 'Food', // Ensure it pulls from the 'Food' collection
+      })
+      .lean();
+
+    // Transform the response to remove "foodId" and extract its fields into "items"
+    const transformedOrders = orders.map((order) => ({
+      ...order,
+      items: order.items.map((item: any) => ({
+        foodId: item.foodId._id,
+        name: item.foodId.name,
+        price: item.foodId.price,
+        thumbnail: item.foodId.thumbnail,
+        quantity: item.quantity,
+      })),
+    }));
+
+    return transformedOrders;
   }
 
   private calculateTotal(items: Iitem[]): number {
