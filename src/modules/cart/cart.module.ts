@@ -12,5 +12,6 @@ import { FoodModule } from '../food/food.module';
   ],
   controllers: [CartController],
   providers: [CartService],
+  exports: [CartService],
 })
 export class CartModule {}

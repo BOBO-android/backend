@@ -19,6 +19,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { FoodModule } from './modules/food/food.module';
 import { CartModule } from './modules/cart/cart.module';
 import { MediaModule } from './modules/media/media.module';
+import { OrderModule } from './modules/order/order.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { MediaModule } from './modules/media/media.module';
     FoodModule,
     CartModule,
     MediaModule,
+    OrderModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

@@ -17,7 +17,7 @@ export class CartService {
     private readonly foodRepository: FoodRepository,
   ) {}
 
-  async getCartByUserId(userId: Types.ObjectId): Promise<Cart | null> {
+  async getCartByUserId(userId: Types.ObjectId) {
     const cart = await this.cartModel.aggregate([
       { $match: { userId } },
       {
@@ -135,5 +135,13 @@ export class CartService {
 
     await cart.save();
     return {};
+  }
+
+  async clearCart(userId: Types.ObjectId): Promise<void> {
+    await this.cartModel.findOneAndUpdate(
+      { userId },
+      { $set: { items: [] } },
+      { new: true },
+    );
   }
 }
