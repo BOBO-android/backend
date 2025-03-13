@@ -6,6 +6,7 @@ import {
   HttpCode,
   Get,
   Query,
+  Param,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { RequestWithUser } from '@/common/interfaces/request-with-user.interface';
@@ -28,12 +29,23 @@ export class OrderController {
 
   @Get()
   @HttpCode(200)
-  @ResponseMessage('Create order successfully')
+  @ResponseMessage('Get all orders successfully')
   async getOrdersByUser(
     @Request() req: RequestWithUser,
     @Query('customerId') customerId: string,
   ) {
     const userId = req.user._id;
     return this.orderService.getOrdersByUser(customerId, userId);
+  }
+
+  @Get(':orderId')
+  @HttpCode(200)
+  @ResponseMessage('Get order successfully')
+  async getOrder(
+    @Request() req: RequestWithUser,
+    @Param('orderId') orderId: string,
+  ) {
+    const userId = req.user._id;
+    return await this.orderService.getOrderById(orderId, userId);
   }
 }
