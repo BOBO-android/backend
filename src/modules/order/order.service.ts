@@ -8,6 +8,7 @@ import { Model, Types } from 'mongoose';
 import { CartService } from '../cart/cart.service';
 import { Order } from './schemas/order.schema';
 import { OrderStatus } from '@/constant';
+import { convertToObjectId } from '@/helpers';
 
 interface Iitem {
   _id: Types.ObjectId;
@@ -79,6 +80,38 @@ export class OrderService {
     }));
 
     return transformedOrders;
+  }
+
+  async getOrderById(orderId: string, ownerId: Types.ObjectId) {
+    if (!Types.ObjectId.isValid(orderId)) {
+      throw new NotFoundException('Invalid order ID');
+    }
+
+    const order = await this.orderModel
+      .findOne({ _id: convertToObjectId(orderId), userId: ownerId })
+      .populate<{
+        userId: { _id: Types.ObjectId; name: string; email: string };
+      }>('userId', 'name email') // Populate user details
+      .populate('items.foodId', 'name price thumbnail') // Populate food details
+      .lean();
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    // Transform response: Flatten food details out of `foodId`
+    const transformedOrder = {
+      ...order,
+      userId: order.userId._id,
+      userEmail: order.userId.email,
+      items: order.items.map((item) => ({
+        ...item,
+        ...item.foodId, // Spread food details
+        foodId: item.foodId._id, // Keep only food ID
+      })),
+    };
+
+    return transformedOrder;
   }
 
   private calculateTotal(items: Iitem[]): number {
