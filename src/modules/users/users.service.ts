@@ -18,6 +18,7 @@ import dayjs from 'dayjs';
 import { ROLES } from '@/constant';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ResendCodeDto } from '@/auth/dto/resend-code.dto';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class UsersService {
@@ -231,6 +232,9 @@ export class UsersService {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
+    // Generate a 4-digit numeric activation code
+    const activationCode = randomInt(1000, 9999).toString(); // Ensures a 4-digit code
+
     const user = await this.userModel.create({
       fullName: fullName,
       username: username,
@@ -239,7 +243,7 @@ export class UsersService {
       password: hashedPassword,
       isActive: false,
       role: ROLES.user,
-      codeId: uuidv4(),
+      codeId: activationCode,
       codeExpired: dayjs().add(10, 'minutes'),
     });
 
