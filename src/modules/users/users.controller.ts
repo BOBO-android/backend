@@ -22,9 +22,11 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetEmailByUserNameDto } from './dto/get-email.dto';
+import { Role, Roles } from '@/decorator/roles.decorator';
 
 @ApiTags('Users') // Grouping in Swagger UI
 @ApiBearerAuth()
+@Roles(Role.Admin)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
