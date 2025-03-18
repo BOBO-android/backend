@@ -10,6 +10,8 @@ async function bootstrap() {
   const HOST = configService.get<string>('HOST');
   const PORT = configService.get<string>('PORT');
 
+  app.setGlobalPrefix('api/v1', { exclude: ['/'] });
+
   // Config Cors
   app.enableCors({
     origin: true,
@@ -29,7 +31,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
 
-  app.setGlobalPrefix('api/v1', { exclude: ['/'] });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -39,6 +40,7 @@ async function bootstrap() {
 
   await app.listen(PORT, () => {
     console.log(`App running in ${HOST}:${PORT}`);
+    console.log(`Api docs: ${HOST}:${PORT}/api-docs`);
   });
 }
 bootstrap();
