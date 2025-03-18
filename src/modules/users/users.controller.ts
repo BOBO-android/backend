@@ -14,7 +14,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Public, ResponseMessage } from '@/decorator/customize';
 import { GetEmailByUserNameDto } from './dto/get-email.dto';
+import { Role, Roles } from '@/decorator/roles.decorator';
 
+@Roles(Role.Admin)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
