@@ -55,6 +55,7 @@ async function bootstrap() {
 
   await app.listen(PORT, () => {
     console.log(`App running in ${HOST}:${PORT}`);
+    console.log(`Api docs: ${HOST}:${PORT}/api-docs`);
   });
 }
 bootstrap();
