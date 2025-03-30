@@ -12,6 +12,8 @@ async function bootstrap() {
   const HOST = configService.get<string>('HOST');
   const PORT = configService.get<string>('PORT');
 
+  app.setGlobalPrefix('api/v1', { exclude: ['/'] });
+
   process.on('uncaughtException', (err) => {
     logger.error(
       `Uncaught Exception: ${err.message}`,
@@ -43,7 +45,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
 
-  app.setGlobalPrefix('api/v1', { exclude: ['/'] });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
