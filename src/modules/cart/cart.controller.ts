@@ -21,9 +21,11 @@ import { CartService } from './cart.service';
 import { ResponseMessage } from '@/decorator/customize';
 import { RequestWithUser } from '@/common/interfaces/request-with-user.interface';
 import { AddToCartDto } from './dto/add-to-cart.dto';
+import { Role, Roles } from '@/decorator/roles.decorator';
 
 @ApiTags('Cart') // Swagger grouping
 @ApiBearerAuth()
+@Roles(Role.User)
 @Controller('carts')
 export class CartController {
   constructor(private readonly cartService: CartService) {}
