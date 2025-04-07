@@ -5,24 +5,20 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { CartService } from '../cart/cart.service';
-import { Order } from './schemas/order.schema';
 import { OrderStatus } from '@/constant';
 import { convertToObjectId } from '@/helpers';
-
-interface Iitem {
-  _id: Types.ObjectId;
-  foodId: Types.ObjectId;
-  name: string;
-  price: number;
-  quantity: number;
-}
+import { Order } from '../schemas/order.schema';
+import { CartService } from '@/modules/cart/cart.service';
+import { UsersService } from '@/modules/users/users.service';
+import { Food, FoodDocument } from '@/modules/food/schemas/food.schema';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectModel(Order.name) private orderModel: Model<Order>,
     private readonly cartService: CartService,
+    private readonly usersService: UsersService,
+    @InjectModel(Food.name) private foodModel: Model<FoodDocument>,
   ) {}
 
   async createOrder(
@@ -34,13 +30,58 @@ export class OrderService {
     if (!cart || cart.items.length === 0)
       throw new NotFoundException('Cart is empty');
 
+    // Lấy thông tin user
+    const user = await this.usersService.findByIdLean(userId.toString());
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Lấy thông tin chi tiết các món ăn từ Food collection
+    const foodIds = cart.items.map((item) => item.foodId);
+    const foods = await this.foodModel
+      .find({ _id: { $in: foodIds } })
+      .select('name price thumbnail storeId')
+      .lean();
+
+    // Check and build foodItems in schema format
+    const foodItems = cart.items.map((cartItem: any) => {
+      const food = foods.find(
+        (f) => f._id.toString() === cartItem.foodId.toString(),
+      );
+      if (!food) {
+        throw new NotFoundException(
+          `Food item with ID ${cartItem.foodId} not found`,
+        );
+      }
+
+      return {
+        foodId: food._id,
+        name: food.name,
+        price: food.price,
+        imageUrl: food.thumbnail,
+        quantity: cartItem.quantity,
+      };
+    });
+
+    const totalPrice = foodItems.reduce((sum: number, item: any) => {
+      return sum + item.price * item.quantity;
+    }, 0);
+
+    const storeId = foods[0].storeId;
+
     // Create a new order
     const order = new this.orderModel({
       userId,
-      items: cart.items,
-      totalPrice: this.calculateTotal(cart.items),
+      storeId,
+      userName: user.fullName,
+      userImageUrl: user.image,
+      orderTime: new Date(),
+      deliverTo: user.address || 'N/A',
+      deliveryDate: null, // hoặc bạn có logic để tính ngày giao dự kiến
+      totalPrice,
       status: OrderStatus.PENDING,
       paymentMethod,
+      foodItems,
     });
 
     await order.save();
@@ -58,28 +99,9 @@ export class OrderService {
 
     if (userId !== ownerId.toString()) throw new BadRequestException();
 
-    const orders = await this.orderModel
-      .find({ userId })
-      .populate({
-        path: 'items.foodId', // Populate 'foodId'
-        select: 'name price thumbnail', // Select required fields
-        model: 'Food', // Ensure it pulls from the 'Food' collection
-      })
-      .lean();
+    const orders = await this.orderModel.find({ userId }).lean();
 
-    // Transform the response to remove "foodId" and extract its fields into "items"
-    const transformedOrders = orders.map((order) => ({
-      ...order,
-      items: order.items.map((item: any) => ({
-        foodId: item.foodId._id,
-        name: item.foodId.name,
-        price: item.foodId.price,
-        thumbnail: item.foodId.thumbnail,
-        quantity: item.quantity,
-      })),
-    }));
-
-    return transformedOrders;
+    return orders;
   }
 
   async getOrderById(orderId: string, ownerId: Types.ObjectId) {
@@ -104,7 +126,7 @@ export class OrderService {
       ...order,
       userId: order.userId._id,
       userEmail: order.userId.email,
-      items: order.items.map((item) => ({
+      items: order.foodItems.map((item) => ({
         ...item,
         ...item.foodId, // Spread food details
         foodId: item.foodId._id, // Keep only food ID
@@ -112,13 +134,5 @@ export class OrderService {
     };
 
     return transformedOrder;
-  }
-
-  private calculateTotal(items: Iitem[]): number {
-    let total = 0;
-    for (const item of items) {
-      total += item.price * item.quantity;
-    }
-    return total;
   }
 }

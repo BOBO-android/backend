@@ -21,6 +21,9 @@ export class User {
   @Prop()
   image: string;
 
+  @Prop({ required: false })
+  address: string;
+
   @Prop({ default: ROLES.user })
   role: string;
 

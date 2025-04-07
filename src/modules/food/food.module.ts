@@ -14,6 +14,6 @@ import { FoodRepository } from './food.repo';
   ],
   controllers: [FoodController, PublicFoodController],
   providers: [FoodService, FoodRepository],
-  exports: [FoodRepository],
+  exports: [FoodRepository, MongooseModule],
 })
 export class FoodModule {}

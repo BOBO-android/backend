@@ -8,10 +8,10 @@ import {
   Query,
   Param,
 } from '@nestjs/common';
-import { OrderService } from './order.service';
+import { OrderService } from '../services/order.service';
 import { RequestWithUser } from '@/common/interfaces/request-with-user.interface';
 import { ResponseMessage } from '@/decorator/customize';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateOrderDto } from '../dto/create-order.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -20,9 +20,11 @@ import {
   ApiQuery,
   ApiParam,
 } from '@nestjs/swagger';
+import { Role, Roles } from '@/decorator/roles.decorator';
 
 @ApiTags('Orders') // Group all order endpoints under "Orders" in Swagger
 @ApiBearerAuth() // Require JWT authentication in Swagger UI
+@Roles(Role.User)
 @Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
