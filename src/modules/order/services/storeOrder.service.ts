@@ -1,6 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadGatewayException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Order, OrderDocument } from '../schemas/order.schema';
 import { OrderStatus } from '@/constant';
 import { convertToObjectId } from '@/helpers';
@@ -51,5 +55,31 @@ export class StoreOrderService {
         quantity: item.quantity,
       })),
     }));
+  }
+
+  async updateOrderStatus(
+    storeId: string,
+    orderId: string,
+    status: OrderStatus,
+    ownerId: Types.ObjectId,
+  ) {
+    if (!Types.ObjectId.isValid(storeId) || storeId !== ownerId.toString())
+      throw new BadGatewayException();
+
+    const order = await this.orderModel.findOne({
+      _id: convertToObjectId(orderId),
+      storeId: convertToObjectId(storeId),
+    });
+
+    if (!order) {
+      throw new NotFoundException(
+        'Order not found or does not belong to this store',
+      );
+    }
+
+    order.status = status;
+    await order.save();
+
+    return {};
   }
 }
