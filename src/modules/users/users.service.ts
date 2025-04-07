@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './schemas/user.schema';
@@ -12,13 +11,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { hashPassword } from '@/helpers';
 import { ConfigService } from '@nestjs/config';
 import aqp from 'api-query-params';
-import { getInfo, isValidObjectId } from '@/utils';
+import { generateCode, getInfo, isValidObjectId } from '@/utils';
 import { CreateAuthDto } from '@/auth/dto/create-auth.dto';
 import dayjs from 'dayjs';
 import { ROLES } from '@/constant';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ResendCodeDto } from '@/auth/dto/resend-code.dto';
-import { randomInt } from 'crypto';
 
 @Injectable()
 export class UsersService {
@@ -233,7 +231,7 @@ export class UsersService {
     const hashedPassword = await hashPassword(password);
 
     // Generate a 4-digit numeric activation code
-    const activationCode = randomInt(1000, 9999).toString(); // Ensures a 4-digit code
+    const activationCode = generateCode(); // Ensures a 4-digit code
 
     const user = await this.userModel.create({
       fullName: fullName,
@@ -267,7 +265,7 @@ export class UsersService {
     const foundUser = await this.userModel.findOne({ email });
     if (!foundUser) throw new BadRequestException();
 
-    foundUser.codeId = uuidv4();
+    foundUser.codeId = generateCode();
     foundUser.codeExpired = dayjs().add(5, 'minutes').toDate();
 
     await foundUser.save();
@@ -275,8 +273,8 @@ export class UsersService {
     // Send mail
     this.mailerService.sendMail({
       to: foundUser.email, // List to reciver
-      subject: 'Active your account at SIC', // Subject line
-      template: 'register',
+      subject: 'Resend code to your account at BoBo', // Subject line
+      template: 'resend-code',
       context: {
         name: foundUser?.username ?? foundUser?.email,
         activationCode: foundUser.codeId,

@@ -13,7 +13,7 @@ import dayjs from 'dayjs';
 import { ResendCodeDto } from './dto/resend-code.dto';
 import { RedisService } from '@/modules/redis/redis.service';
 import { MailerService } from '@nestjs-modules/mailer';
-import { generateResetCode } from '@/utils';
+import { generateCode } from '@/utils';
 import { TokenService } from '@/modules/token/token.service';
 
 @Injectable()
@@ -105,7 +105,7 @@ export class AuthService {
     if (!foundUser)
       throw new BadRequestException('User with this email does not exist.');
 
-    const code = generateResetCode();
+    const code = generateCode();
     const ttl = TIME_ONE_HOUR; // code expiration time in seconds (1 hour)
 
     // Cache code in Redis
@@ -114,7 +114,7 @@ export class AuthService {
     // Send mail
     this.mailerService.sendMail({
       to: foundUser.email, // List to reciver
-      subject: 'SIC Password Reset', // Subject line
+      subject: 'BoBo Password Reset', // Subject line
       template: 'forgotPassword',
       context: {
         name: foundUser?.username ?? foundUser?.email,
