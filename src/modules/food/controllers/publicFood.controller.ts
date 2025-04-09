@@ -21,32 +21,25 @@ export class PublicFoodController {
   @ResponseMessage('Get public offered foods successfully')
   @ApiOperation({
     summary: 'Get public offered foods',
-    description: 'Retrieve a paginated list of public offered foods',
+    description:
+      'Retrieve a list of public offered foods using cursor-based pagination',
   })
   @ApiQuery({
-    name: 'query',
+    name: 'lastId',
     required: false,
-    description: 'Search query (optional)',
+    description: 'ID of the last item from previous fetch (for pagination)',
   })
   @ApiQuery({
-    name: 'current',
-    required: true,
-    default: 1,
-    description: 'Current page number',
-  })
-  @ApiQuery({
-    name: 'pageSize',
-    required: true,
-    default: 10,
-    description: 'Number of items per page',
+    name: 'limit',
+    required: false,
+    description: 'Number of items to fetch per page (default: 10)',
   })
   @ApiResponse({ status: 200, description: 'List of public offered foods' })
-  getPublicOfferedFoods(
-    @Query() query: string,
-    @Query('current') current: string,
-    @Query('pageSize') pageSize: string,
+  async getPublicOfferedFoods(
+    @Query('lastId') lastId?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.foodService.getPublicOfferedFoods(query, +current, +pageSize);
+    return this.foodService.getPublicOfferedFoods(lastId, +(limit ?? 10));
   }
 
   @Get(':slug')
