@@ -27,6 +27,18 @@ export class Store {
   @Prop({ type: Number, default: 0 })
   propductsCount: number;
 
+  @Prop({ required: true })
+  bankAccountNumber: string;
+
+  @Prop({ required: true })
+  bankType: string;
+
+  @Prop({ required: true })
+  businessLicense: string;
+
+  @Prop({ required: true })
+  logo: string;
+
   @Prop({
     required: true,
     enum: [
