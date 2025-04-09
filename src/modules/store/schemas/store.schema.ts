@@ -39,6 +39,9 @@ export class Store {
   @Prop({ required: true })
   logo: string;
 
+  @Prop({ required: true })
+  phoneNumber: string;
+
   @Prop({
     required: true,
     enum: [
@@ -48,7 +51,7 @@ export class Store {
       STATUS_STORE.VIOLATION,
     ],
     default: STATUS_STORE.PENDING,
-  }) // Example statuses
+  })
   status: string;
 
   @Prop({ type: Boolean, default: false })
