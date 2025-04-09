@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  Matches,
 } from 'class-validator';
 
 export class CreateStoreDto {
@@ -68,4 +69,15 @@ export class CreateStoreDto {
   @IsUrl()
   @IsNotEmpty()
   logo: string;
+
+  @ApiProperty({
+    example: '0912345678',
+    description: 'Phone number of the store',
+  })
+  @IsString()
+  @Matches(/^(0|\+84)[0-9]{9}$/, {
+    message: 'Phone number must be valid Vietnamese number',
+  })
+  @IsNotEmpty()
+  phoneNumber: string;
 }
