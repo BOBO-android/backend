@@ -155,37 +155,22 @@ export class FoodService {
     return {};
   }
 
-  async getPublicOfferedFoods(
-    query: string,
-    current: number = 1,
-    pageSize: number = 10,
-  ) {
-    // Parse query parameters
-    const { filter, sort } = aqp(query);
-    delete filter.current;
-    delete filter.pageSize;
+  async getPublicOfferedFoods(lastId?: string, limit: number = 10) {
+    const filter: any = {
+      isAvailable: true,
+      isOffered: true,
+    };
 
-    // Ensure only available, offered
-    filter.isAvailable = true;
-    filter.isOffered = true;
+    // If lastId is provided, add _id < lastId for pagination
+    if (lastId && Types.ObjectId.isValid(lastId)) {
+      filter._id = { $lt: new Types.ObjectId(lastId) };
+    }
 
-    // Ensure pagination values are valid
-    current = Math.max(1, current);
-    pageSize = Math.max(1, pageSize);
-
-    // Count total items efficiently
-    const totalItems = await this.foodModel.countDocuments(filter);
-
-    // Calculate total pages
-    const totalPage = Math.ceil(totalItems / pageSize);
-    const skip = (current - 1) * pageSize;
-
-    // Fetch paginated foods
+    // Fetch limited items sorted by _id descending
     const foods = await this.foodModel
       .find(filter)
-      .sort(sort as any)
-      .limit(pageSize)
-      .skip(skip)
+      .sort({ _id: -1 })
+      .limit(limit)
       .lean();
 
     // Calculate final price after discount
@@ -194,7 +179,15 @@ export class FoodService {
       finalPrice: food.price * (1 - food.discount / 100),
     }));
 
-    return { foods: foodsWithDiscount, totalPage, totalItems, current };
+    // Determine if there are more items
+    const hasMore = foods.length === limit;
+    const nextLastId = hasMore ? foods[foods.length - 1]._id : null;
+
+    return {
+      foods: foodsWithDiscount,
+      lastId: nextLastId,
+      hasMore,
+    };
   }
 
   async findBySlug(slug: string) {
