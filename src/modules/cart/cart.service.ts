@@ -50,6 +50,7 @@ export class CartService {
             name: '$food.name',
             price: '$food.price',
             quantity: '$items.quantity',
+            thumbnail: '$food.thumbnail',
           },
         },
       },
