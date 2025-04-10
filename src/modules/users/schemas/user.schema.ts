@@ -18,8 +18,8 @@ export class User {
   @Prop()
   password: string;
 
-  @Prop()
-  image: string;
+  @Prop({ type: String, default: null })
+  image: string | null;
 
   @Prop({ required: false })
   address: string;
