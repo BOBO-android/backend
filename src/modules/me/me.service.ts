@@ -15,4 +15,11 @@ export class MeService {
       .select('username fullName image')
       .lean();
   }
+
+  async getFullProfile(userId: Types.ObjectId) {
+    return this.userModel
+      .findById(userId)
+      .select('fullName email image address')
+      .lean();
+  }
 }

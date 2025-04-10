@@ -17,4 +17,11 @@ export class MeController {
     const userId = req.user._id;
     return this.meService.getProfile(userId);
   }
+
+  @Get('profile')
+  @ResponseMessage('Get profile successfully')
+  async getFullProfile(@Request() req: RequestWithUser) {
+    const userId = req.user._id;
+    return this.meService.getFullProfile(userId);
+  }
 }
