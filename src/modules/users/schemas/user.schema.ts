@@ -13,10 +13,10 @@ export class User {
   email: string;
 
   @Prop()
-  phoneNumber: string;
-
-  @Prop()
   password: string;
+
+  @Prop({ type: String, default: null })
+  phoneNumber: string | null;
 
   @Prop({ type: String, default: null })
   image: string | null;
