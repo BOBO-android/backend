@@ -22,6 +22,7 @@ import { MediaModule } from './modules/media/media.module';
 import { OrderModule } from './modules/order/order.module';
 import { AppLoggerService } from './common/logger/logger.service';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
+import { MeModule } from './modules/me/me.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { LoggerMiddleware } from './common/middlewares/logger.middleware';
     CartModule,
     MediaModule,
     OrderModule,
+    MeModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
