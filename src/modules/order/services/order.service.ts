@@ -113,23 +113,31 @@ export class OrderService {
       .findOne({ _id: convertToObjectId(orderId), userId: ownerId })
       .populate<{
         userId: { _id: Types.ObjectId; name: string; email: string };
-      }>('userId', 'name email') // Populate user details
-      .populate('items.foodId', 'name price thumbnail') // Populate food details
+      }>('userId', 'name email')
+      .populate('foodItems.foodId', 'name price thumbnail')
+      .populate<{
+        storeId: { _id: Types.ObjectId; phoneNumber: string };
+      }>('storeId', 'phoneNumber')
       .lean();
 
     if (!order) {
       throw new NotFoundException('Order not found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { foodItems, userId, storeId, ...rest } = order;
+
     // Transform response: Flatten food details out of `foodId`
     const transformedOrder = {
-      ...order,
+      ...rest,
       userId: order.userId._id,
+      storeId: storeId._id,
       userEmail: order.userId.email,
+      storePhoneNumber: order.storeId.phoneNumber,
       items: order.foodItems.map((item) => ({
         ...item,
-        ...item.foodId, // Spread food details
-        foodId: item.foodId._id, // Keep only food ID
+        ...item.foodId,
+        foodId: item.foodId._id,
       })),
     };
 
