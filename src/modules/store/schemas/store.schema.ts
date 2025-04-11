@@ -12,8 +12,8 @@ export class Store {
   @Prop({ required: true, unique: true })
   slug: string;
 
-  @Prop({ type: String, required: true })
-  description: string;
+  @Prop({ type: String, required: false, default: null })
+  description?: string | null;
 
   @Prop({ type: String, required: true })
   address: string;
